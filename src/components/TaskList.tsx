@@ -3,13 +3,34 @@ import { Task } from '../type';
 
 interface TaskListProps {
   tasks: Task[];
+  categories: { id: string; name: string }[]; // Ensure categories are passed down
   onEditTask: (task: Task) => void;
   deleteTask: (taskId: string) => Promise<void>;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, deleteTask }) => {
-  console.log("Tasks passed to TaskList:", tasks);
+const TaskList: React.FC<TaskListProps> = ({ tasks, categories, onEditTask, deleteTask }) => {
+  console.log('Tasks passed to TaskList:', tasks);
+  console.log('Categories passed to TaskList:', categories);
 
+  // Helper function to get category name based on categoryId
+  const getCategoryName = (categoryId: string) => {
+    if (!categories || categories.length === 0) {
+      console.error('Categories data is missing or empty.');
+      return 'Unknown Category'; // Return fallback if categories are not available
+    }
+
+    // Find the category using the provided categoryId
+    const category = categories.find((cat) => cat.id === categoryId);
+
+    if (!category) {
+      console.error(`Category with ID ${categoryId} not found.`);
+      return 'Unknown Category'; // Return fallback if category is not found
+    }
+
+    return category.name; // Return the name of the found category
+  };
+
+  // Handle task deletion
   const handleDelete = async (taskId: string) => {
     if (window.confirm('Are you sure you want to delete this task?')) {
       await deleteTask(taskId);
@@ -41,9 +62,11 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onEditTask, deleteTask }) =>
                 <p className="text-gray-700">{task.taskDescription}</p>
                 <p className="text-gray-600">Task: {task.task}</p>
                 <p className="text-gray-600">Social Media: {task.socialMedia}</p>
-                <p className="text-gray-600">Points: {task.point}</p> 
+                <p className="text-gray-600">Points: {task.point}</p>
+                {/* Use getCategoryName to fetch the category name */}
+                <p className="text-gray-600">Category: {getCategoryName(task.category)}</p>
               </div>
-              <div className="ml-4 flex flex-col md:flex-row gap-2">
+              <div className="ml-4 flex flex-row sm:flex-col gap-2">
                 <button
                   onClick={() => onEditTask(task)}
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-150"

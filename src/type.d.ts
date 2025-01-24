@@ -6,6 +6,7 @@ interface Task {
   socialMedia: string;
   taskImage: string; 
   point: number;
+  category: string;
 }
 
 interface TaskError {
@@ -16,6 +17,7 @@ interface TaskError {
   image?: string;
   point?: string; // Added error field for points
   general?: string;
+  category?: string
 }
 
 
@@ -32,7 +34,7 @@ export interface User {
     updatedAt: string;           // Last update timestamp (also string for ISO date)
 }
 
-export type ActiveSection = 'dashboard' | 'addTask' | 'manageTasks' | 'manageUsers' | 'withdrawals';
+export type ActiveSection = 'dashboard' | 'addTask' | 'manageTasks' | 'manageUsers' | 'addCategory' | 'categoryList';
 
 
 export interface DashboardProps {

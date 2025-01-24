@@ -1,11 +1,28 @@
 // src/components/GitHubLoginButton.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { LoginWithGitHub } from "../utils/helpers/LoginWithGithub";
 import { useNavigate } from "react-router-dom";
-import { FaGithub } from "react-icons/fa"; // Import GitHub icon from react-icons
+import { FaGithub } from "react-icons/fa";  
 
 const GitHubLoginButton: React.FC = () => {
     const navigate = useNavigate();
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+    useEffect(() => {
+        // Check if the user is already authenticated (e.g., by checking a token in localStorage or a global state)
+        const checkAuth = async () => {
+            const isLoggedIn = await LoginWithGitHub(); // Modify this according to your authentication method
+            setIsAuthenticated(isLoggedIn);
+        };
+        checkAuth();
+    }, []);
+
+    // Redirect to the dashboard if the user is authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/"); // Redirect to the dashboard
+        }
+    }, [isAuthenticated, navigate]);
 
     const handleLogin = async () => {
         const isAuthenticated = await LoginWithGitHub();

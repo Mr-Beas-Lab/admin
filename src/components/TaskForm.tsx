@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { db, collection, addDoc } from '../firebase/firebase-config';
+import { db, collection, addDoc, getDocs } from '../firebase/firebase-config';
 import socialMediaOptions from '@/utils/socialMediaOptions';
 import { Task, TaskError } from '@/type';
 
@@ -18,10 +18,31 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
         socialMedia: '',
         taskImage: '',
         point: 0,
+        category: '',
     });
 
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
     const [errors, setErrors] = useState<TaskError>({});
     const [loading, setLoading] = useState<boolean>(false);
+
+    // Fetch categories from Firebase
+    const fetchCategories = async () => {
+        try {
+            const categoryCollection = collection(db, 'categories');
+            const categorySnapshot = await getDocs(categoryCollection);
+            const categoryList = categorySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                name: doc.data().name,
+            }));
+            setCategories(categoryList);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchCategories();  
+    }, []);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -42,19 +63,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
         if (!task.socialMedia) validationErrors.socialMedia = 'Please select a social media platform.';
         if (!task.taskImage.trim()) validationErrors.image = 'Please provide an image URL.';
         if (task.point <= 0) validationErrors.point = 'Points must be greater than 0.';
+        if (!task.category) validationErrors.category = 'Please select a category.';
 
         return validationErrors;
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-    
+
         const validationErrors = validate();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
-    
+
         setLoading(true);
         try {
             // Add the task to Firebase and get the document reference
@@ -65,13 +87,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
                 socialMedia: task.socialMedia,
                 taskImage: task.taskImage,
                 point: task.point,
+                category: task.category,
                 createdAt: new Date(),
             });
-    
+
             // Use the generated ID to update the taskId
             const newTask = { ...task, taskId: taskRef.id };
             addTask(newTask);
-    
+
             // Reset the form
             setTask({
                 taskId: '',
@@ -81,6 +104,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
                 socialMedia: '',
                 taskImage: '',
                 point: 0,
+                category: '',
             });
             setErrors({});
             toast.success('Task added successfully!');
@@ -91,7 +115,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
             setLoading(false);
         }
     };
-    
 
     return (
         <div>
@@ -132,9 +155,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
                     name="socialMedia"
                     value={task.socialMedia}
                     onChange={handleChange}
-                    className={`border p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        errors.socialMedia ? 'border-red-500' : ''
-                    }`}
+                    className={`border p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.socialMedia ? 'border-red-500' : ''}`}
                 >
                     <option value="" disabled>
                         Select a platform
@@ -166,6 +187,24 @@ const TaskForm: React.FC<TaskFormProps> = ({ addTask }) => {
                     className={`border p-2 mb-4 w-full ${errors.point ? 'border-red-500' : ''}`}
                 />
                 {errors.point && <p className="text-red-500">{errors.point}</p>}
+
+                {/* Category Dropdown */}
+                <select
+                    name="category"
+                    value={task.category}
+                    onChange={handleChange}
+                    className={`border p-2 mb-4 w-full ${errors.category ? 'border-red-500' : ''}`}
+                >
+                    <option value="" disabled>
+                        Select a Category
+                    </option>
+                    {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </select>
+                {errors.category && <p className="text-red-500">{errors.category}</p>}
 
                 <button type="submit" className="bg-blue-500 text-white px-4 py-2" disabled={loading}>
                     {loading ? 'Adding...' : 'Add Task'}

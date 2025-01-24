@@ -114,6 +114,22 @@ const EditTask: React.FC<EditTaskProps> = ({ task, onCancel, onTaskUpdated }) =>
       </div>
 
       <div className="mt-2">
+        <label htmlFor="category" className="block text-sm font-medium mb-1">Category</label>
+        <select
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          className="border p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        >
+          <option value="task">Task</option>
+          <option value="bug">Bug</option>
+          <option value="feature">Feature</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+
+      <div className="mt-2">
         <label htmlFor="taskImage" className="block text-sm font-medium mb-1">Task Image URL</label>
         <input
           type="text"

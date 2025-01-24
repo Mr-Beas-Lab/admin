@@ -3,6 +3,8 @@ import TaskForm from './TaskForm';
 import TaskPage from './TaskPage';
 import UserPage from './UserPage';
 import { DashboardProps } from '../type';
+import CategoryForm from './category/CategoryForm';
+import CategoryList from './category/CategoryList';
 
 const Dashboard: React.FC<DashboardProps> = ({ activeSection }) => {
     return (
@@ -18,6 +20,8 @@ const Dashboard: React.FC<DashboardProps> = ({ activeSection }) => {
             {activeSection === 'addTask' && <TaskForm addTask={(task) => console.log(task)} />}
             {activeSection === 'manageTasks' && <TaskPage />}
             {activeSection === 'manageUsers' && <UserPage />}
+            {activeSection === 'addCategory' && <CategoryForm />}
+            {activeSection === 'categoryList' && <CategoryList />}
         </div>
     );
 };

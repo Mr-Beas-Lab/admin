@@ -9,6 +9,7 @@ import EditTask from './EditTask';
 
 const TaskPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]); // Add state for categories
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -18,7 +19,7 @@ const TaskPage: React.FC = () => {
       try {
         const taskCollection = collection(db, 'tasks');
         const taskSnapshot = await getDocs(taskCollection);
-        const fetchedTasks: Task[] = taskSnapshot.docs.map(doc => ({
+        const fetchedTasks: Task[] = taskSnapshot.docs.map((doc) => ({
           taskId: doc.id,
           ...doc.data(),
         })) as Task[];
@@ -30,17 +31,34 @@ const TaskPage: React.FC = () => {
       }
     };
 
+    // Fetch categories from Firebase
+    const fetchCategories = async () => {
+      try {
+        const categoryCollection = collection(db, 'categories');
+        const categorySnapshot = await getDocs(categoryCollection);
+        const fetchedCategories = categorySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+        }));
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast.error('Failed to fetch categories. Please try again later.');
+      }
+    };
+
     fetchTasks();
+    fetchCategories();
   }, []);
 
   // Derived state for filtered tasks
-  const filteredTasks = tasks.filter(task =>
+  const filteredTasks = tasks.filter((task) =>
     task.companyName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     task.taskDescription?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const deleteTask = async (taskId: string) => {
-    console.log('Deleting task with ID:', taskId);  
+    console.log('Deleting task with ID:', taskId);
     if (!taskId) {
       console.error('Error: taskId is undefined or empty');
       return;
@@ -48,18 +66,15 @@ const TaskPage: React.FC = () => {
     try {
       const taskRef = doc(db, 'tasks', taskId);
       await deleteDoc(taskRef);
-  
-      setTasks(prevTasks => prevTasks.filter(task => task.taskId !== taskId));
-  
+
+      setTasks((prevTasks) => prevTasks.filter((task) => task.taskId !== taskId));
+
       toast.success('Task deleted successfully!');
     } catch (error) {
       console.error('Error deleting task:', error);
       toast.error('Error deleting task. Please try again.');
     }
   };
-  
-  
-  
 
   // Handle task update completion
   const handleTaskUpdated = async (updatedTask: Task) => {
@@ -75,8 +90,8 @@ const TaskPage: React.FC = () => {
       };
       await updateDoc(taskRef, taskUpdateData);
 
-      setTasks(prevTasks =>
-        prevTasks.map(task => (task.taskId === updatedTask.taskId ? updatedTask : task))
+      setTasks((prevTasks) =>
+        prevTasks.map((task) => (task.taskId === updatedTask.taskId ? updatedTask : task))
       );
       setEditingTask(null);
       toast.success('Task updated successfully!');
@@ -94,7 +109,7 @@ const TaskPage: React.FC = () => {
           type="text"
           placeholder="Search tasks..."
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="border p-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
@@ -106,7 +121,12 @@ const TaskPage: React.FC = () => {
           onTaskUpdated={handleTaskUpdated}
         />
       ) : (
-        <TaskList tasks={filteredTasks} onEditTask={setEditingTask} deleteTask={deleteTask} />
+        <TaskList
+          tasks={filteredTasks}
+          categories={categories}  
+          onEditTask={setEditingTask}
+          deleteTask={deleteTask}
+        />
       )}
 
       <ToastContainer />

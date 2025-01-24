@@ -1,11 +1,11 @@
 // src/components/SideBar.tsx
 import React, { useState } from 'react';
-import { ActiveSection } from '../type'; // Adjust the import path as necessary
-import { FaHome, FaPlus, FaClipboardList, FaUsers, FaSignOutAlt, FaBars } from 'react-icons/fa'; // Font Awesome icons
+import { ActiveSection } from '../type';  
+import { FaHome, FaPlus, FaClipboardList, FaUsers, FaSignOutAlt, FaBars, FaListAlt, FaFolderPlus } from 'react-icons/fa'; 
 
 interface SideBarProps {
-  setActiveSection: (section: ActiveSection) => void; // Function to change the active section
-  onLogout: () => void; // Function to handle logout
+  setActiveSection: (section: ActiveSection) => void;  
+  onLogout: () => void;  
 }
 
 const SideBar: React.FC<SideBarProps> = ({ setActiveSection, onLogout }) => {
@@ -79,7 +79,28 @@ const SideBar: React.FC<SideBarProps> = ({ setActiveSection, onLogout }) => {
             <FaUsers className="h-6 w-6 mr-3" aria-hidden="true" />
             <span className="text-lg">Manage Users</span>
           </li>
- 
+          <li
+            className="flex items-center cursor-pointer hover:bg-gray-800 p-2 rounded transition-colors duration-200"
+            onClick={() => handleMenuItemClick('addCategory')}
+            role="button"
+            aria-label="Add Category"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleMenuItemClick('addCategory')}
+          >
+            <FaFolderPlus className="h-6 w-6 mr-3" aria-hidden="true" />
+            <span className="text-lg">Add Category</span>
+          </li>
+          <li
+            className="flex items-center cursor-pointer hover:bg-gray-800 p-2 rounded transition-colors duration-200"
+            onClick={() => handleMenuItemClick('categoryList')}
+            role="button"
+            aria-label="Category List"
+            tabIndex={0}
+            onKeyPress={(e) => e.key === 'Enter' && handleMenuItemClick('categoryList')}
+          >
+            <FaListAlt className="h-6 w-6 mr-3" aria-hidden="true" />
+            <span className="text-lg">Category List</span>
+          </li>
         </ul>
         <footer className="mt-auto">
           <button
